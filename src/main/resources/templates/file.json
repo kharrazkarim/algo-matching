@@ -1,0 +1,74 @@
+	<table>
+			<tr>
+			<td>
+			File to upload:	
+			</td>
+			<td>
+			<input type="file" name="file" id="fileSelect"  />
+			</td>
+			<td>
+			<th:button type="button" onclick="doSubmit()" class="btn btn-warning">Submit</th:button>
+			</td>
+			</tr>
+			</table>
+		</div>
+		
+		<div>	
+			<table>
+			<tr>
+			<td>
+  			<input type="text" placeholder="Nb Nodes " id="nbnodes" />
+			</td>
+			<td>  
+			<input type="text" placeholder="Nb Edges" id="nbedges"  />
+			<td>
+			<td> 
+			<th:button id="open" type="button" th:onclick="'constract()'"  class="btn btn-warning">construct</th:button>
+ 			</td>
+ 			</tr>
+			</table>
+		</div>
+		
+		<div>
+			<table>
+			<tr>
+			<td>
+			<select id="file" onchange="handleClick()" >
+  			<option value="">--Choose a file please--</option>
+  			<option  th:each=" file : ${files}" th:text="${file.substring(file.lastIndexOf('/')+1)}" value="${file}" > </th:option>
+   			</select>
+   			</td>
+   			</tr>
+			</table>
+  		</div>
+  
+  <div >
+ </div>
+ 
+
+
+
+
+  <div class='item'>
+
+ <div>
+  <table>
+<tr>
+<td>
+<th:button id="open" type="button" th:onclick="'save()'"  class="btn btn-warning">save</th:button></td>
+<td>
+<th:button th:onclick="'Greedy()'" class="btn btn-warning">Greedy Matching</th:button>
+</td>
+<td>  <th:button th:onclick="'Edmonds()'" class="btn btn-warning">Edmonds Matching</th:button>
+</td>
+	</tr>	
+	</table>
+</div>
+
+
+<div id="my_dataviz" ></div>
+
+</div>
+
+
+</div> 

@@ -1,0 +1,399 @@
+<html xmlns:th="https://www.thymeleaf.org">
+<body>
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v3.js"></script>
+
+<!-- Create a div where the graph will take place -->
+
+	<div th:if="${message}">
+		<h2 th:text="${message}"/>
+	</div>
+
+	<div>
+		<form method="POST" enctype="multipart/form-data" action="/">
+			<table>
+				<tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
+				<tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+			</table>
+		</form>
+	</div>
+
+	<div>
+		<table>
+				<tr><td>
+				<select id="file" onchange="handleClick()" >
+    <option value="">-- Veuillez selectionner un fichier--</option>
+    <option  th:each=" file : ${files}" th:text="${file.substring(file.lastIndexOf('/')+1)}" value="${file}" > 	</option>
+   
+</select></td>
+<tr>
+<td>
+  <input type="text" placeholder="Nb Nodes " id="nbnodes"  style="width : 20 px" >
+
+</td>
+<td>  <input type="text" placeholder="Nb Edges" id="nbedges" style="width : 20 px" >
+</td>
+<td> <button id="open" type="button" th:onclick="'constract()'"  class="btn btn-warning">constract</button></td>
+
+	</tr>		
+<tr>
+<td>
+<button th:onclick="'Greedy()'" >Greedy Matching</button>
+</td>
+<td>  <button th:onclick="'Edmonds()'">Edmonds Matching</button>
+</td>
+	</tr>	
+	</table>
+	<div id="top" align="center">
+<div id="my_dataviz" name="graph" style="margin-left: 20em ; margin-top: 4 cm "></div></div>
+</div>
+
+</body>
+</html>
+<script>
+function handleClick(event)
+{
+	var d = document.getElementById('my_dataviz');
+	d3.select("svg").remove();
+	var request = new XMLHttpRequest()
+
+	// Open a new connection, using the GET request on the URL endpoint
+
+	var e = document.getElementById("file");
+	var fileName = e.options[e.selectedIndex].text;
+	var url = 'http://localhost:8084/graphs/'+fileName
+	request.open('GET', url , true)
+	request.send()
+	
+
+
+
+
+var width = 500,
+    height = 300
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var force = d3.layout.force()
+    .gravity(0.05)
+    .distance(100)
+    .charge(-100)
+    .size([width, height]);
+
+d3.json(url, function(error, data) {
+  if (error) throw error;
+
+  force
+      .nodes(data.nodes)
+      .links(data.edges)
+      .start();
+
+  var link = svg
+  .selectAll("line")
+  .data(data.edges)
+  .enter()
+  .append("line")
+    .style("stroke", "#aaa")
+
+  var node = svg.selectAll(".node")
+      .data(data.nodes)
+    .enter().append("g")
+      .attr("class", "node")
+      .call(force.drag);
+
+  node.append("circle")
+    .attr("r", 20)
+    .style("fill", "#69b3a2")
+  
+
+
+  node.append("text")
+      .attr("dx", 12)
+      .attr("dy", ".35em")
+      .text(function(d) { return d.label });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+  });
+});
+
+
+
+//var button = document.createElement("button");
+//button.innerHTML = "Greedy Matching";
+
+// 2. Append somewhere
+//var body = document.getElementsByName("graph")
+//document.body.appendChild(button);
+
+// 3. Add event handler
+//button.addEventListener ("click", function() {
+//  alert("did something");
+//});
+	
+	
+}
+	 
+function constract(){
+	d3.select("svg").remove();
+
+
+	       var nbnodes = document.getElementById("nbnodes").value;
+    var nbedges = document.getElementById("nbedges").value;
+    console.log(nbedges,nbnodes)
+	  request2 = new XMLHttpRequest();
+	var url2 = 'http://localhost:8084/randomexec?nbnodes='+nbnodes+'&nbedges='+nbedges
+
+	  console.log(url2)
+		request2.open('GET', url2 , true)
+
+	  request2.send();
+	  // This will be fired when the response is received
+	  request2.onload = function() {
+		  //
+		  console.log(request2.response);
+		  
+		  var width = 500,
+		    height = 300
+
+		var svg = d3.select("body").append("svg")
+		    .attr("width", width)
+		    .attr("height", height);
+
+		var force = d3.layout.force()
+		    .gravity(0.05)
+		    .distance(100)
+		    .charge(-100)
+		    .size([width, height]);
+		  d3.json(url2, function(error, data) {
+		    if (error) throw error;
+
+		    force
+		        .nodes(data.nodes)
+		        .links(data.edges)
+		        .start();
+
+		    var link = svg
+		    .selectAll("line")
+		    .data(data.edges)
+		    .enter()
+		    .append("line")
+		      .style("stroke", "#aaa")
+
+		    var node = svg.selectAll(".node")
+		        .data(data.nodes)
+		      .enter().append("g")
+		        .attr("class", "node")
+		        .call(force.drag);
+
+		    node.append("circle")
+		      .attr("r", 20)
+		      .style("fill", "#69b3a2")
+		    
+
+
+		    node.append("text")
+		        .attr("dx", 12)
+		        .attr("dy", ".35em")
+		        .text(function(d) { return d.label });
+
+		    force.on("tick", function() {
+		      link.attr("x1", function(d) { return d.source.x; })
+		          .attr("y1", function(d) { return d.source.y; })
+		          .attr("x2", function(d) { return d.target.x; })
+		          .attr("y2", function(d) { return d.target.y; });
+
+		      node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+		    });
+		  });
+	  }	
+	  // ON ERROR
+	  request2.onerror = function() {
+		  console.log("ERROR")
+	  }
+
+	  
+	  
+	  
+  }
+		
+		
+function Greedy(){
+
+	d3.select("svg").remove();
+
+
+	var e = document.getElementById("file");
+	var fileName = e.options[e.selectedIndex].text;
+request2 = new XMLHttpRequest();
+var url2 = 'http://localhost:8084/exec?graphname='+fileName+'&algo=greedy'
+
+console.log(url2)
+	request2.open('GET', url2 , true)
+
+request2.send();
+// This will be fired when the response is received
+request2.onload = function() {
+	  //
+	  console.log(request2.response);
+	  
+	  var width = 500,
+	    height = 300
+
+	var svg = d3.select("body").append("svg")
+	    .attr("width", width)
+	    .attr("height", height);
+
+	var force = d3.layout.force()
+	    .gravity(0.05)
+	    .distance(100)
+	    .charge(-100)
+	    .size([width, height]);
+	  d3.json(url2, function(error, data) {
+	    if (error) throw error;
+
+	    force
+	        .nodes(data.nodes)
+	        .links(data.edges)
+	        .start();
+
+	    var link = svg
+	    .selectAll("line")
+	    .data(data.edges)
+	    .enter()
+	    .append("line")
+	      .style("stroke", "#aaa")
+
+	    var node = svg.selectAll(".node")
+	        .data(data.nodes)
+	      .enter().append("g")
+	        .attr("class", "node")
+	        .call(force.drag);
+
+	    node.append("circle")
+	      .attr("r", 20)
+	      .style("fill", "#69b3a2")
+	    
+
+
+	    node.append("text")
+	        .attr("dx", 12)
+	        .attr("dy", ".35em")
+	        .text(function(d) { return d.label });
+
+	    force.on("tick", function() {
+	      link.attr("x1", function(d) { return d.source.x; })
+	          .attr("y1", function(d) { return d.source.y; })
+	          .attr("x2", function(d) { return d.target.x; })
+	          .attr("y2", function(d) { return d.target.y; });
+
+	      node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	    });
+	  });
+}	
+// ON ERROR
+request2.onerror = function() {
+	  console.log("ERROR")
+}
+
+
+
+
+}
+
+function Edmonds(){
+
+	d3.select("svg").remove();
+	
+	
+	var e = document.getElementById("file");
+	var fileName = e.options[e.selectedIndex].text;
+request2 = new XMLHttpRequest();
+var url2 = 'http://localhost:8084/exec?graphname='+fileName+'&algo=edmonds'
+
+console.log(url2)
+	request2.open('GET', url2 , true)
+
+request2.send();
+// This will be fired when the response is received
+request2.onload = function() {
+	  //
+	  console.log(request2.response);
+	  
+	  var width = 500,
+	    height = 300
+
+	var svg = d3.select("body").append("svg")
+	    .attr("width", width)
+	    .attr("height", height);
+
+	var force = d3.layout.force()
+	    .gravity(0.05)
+	    .distance(100)
+	    .charge(-100)
+	    .size([width, height]);
+	  d3.json(url2, function(error, data) {
+	    if (error) throw error;
+
+	    force
+	        .nodes(data.nodes)
+	        .links(data.edges)
+	        .start();
+
+	    var link = svg
+	    .selectAll("line")
+	    .data(data.edges)
+	    .enter()
+	    .append("line")
+	      .style("stroke", "#aaa")
+
+	    var node = svg.selectAll(".node")
+	        .data(data.nodes)
+	      .enter().append("g")
+	        .attr("class", "node")
+	        .call(force.drag);
+
+	    node.append("circle")
+	      .attr("r", 20)
+	      .style("fill", "#69b3a2")
+	    
+
+
+	    node.append("text")
+	        .attr("dx", 12)
+	        .attr("dy", ".35em")
+	        .text(function(d) { return d.label });
+
+	    force.on("tick", function() {
+	      link.attr("x1", function(d) { return d.source.x; })
+	          .attr("y1", function(d) { return d.source.y; })
+	          .attr("x2", function(d) { return d.target.x; })
+	          .attr("y2", function(d) { return d.target.y; });
+
+	      node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	    });
+	  });
+	 
+	 
+	  
+}	
+// ON ERROR
+request2.onerror = function() {
+	  console.log("ERROR")
+}
+
+
+
+
+}
+
+
+
+</script>
